@@ -25,8 +25,11 @@
     - Select IDE Tools - Flash Size: "1M (no SPIFFS)"
   ====================================================*/
 
+#ifndef USE_IOTMANAGER
 #define VERSION                0x05050200  // 5.5.2
-
+#else
+#define VERSION                0x05050300  // 5.5.3
+#endif
 enum log_t   {LOG_LEVEL_NONE, LOG_LEVEL_ERROR, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG, LOG_LEVEL_DEBUG_MORE, LOG_LEVEL_ALL};
 enum week_t  {Last, First, Second, Third, Fourth};
 enum dow_t   {Sun=1, Mon, Tue, Wed, Thu, Fri, Sat};
@@ -159,7 +162,11 @@ enum opt_t   {P_HOLD_TIME, P_MAX_POWER_RETRY, P_MAX_PARAM8};   // Index in sysCf
 
 #include <PubSubClient.h>                   // MQTT
 #ifndef MESSZ
-  #define MESSZ                368          // Max number of characters in JSON message string (4 x DS18x20 sensors)
+  #ifndef USE_IOTMANAGER
+    #define MESSZ                368          // Max number of characters in JSON message string (4 x DS18x20 sensors)
+  #else
+    #define MESSZ                900          // Max number of characters in JSON message string (4 x DS18x20 sensors)
+  #endif
 #endif
 #if (MQTT_MAX_PACKET_SIZE -TOPSZ -7) < MESSZ  // If the max message size is too small, throw an error at compile time
                                             // See pubsubclient.c line 359
@@ -185,6 +192,9 @@ enum opt_t   {P_HOLD_TIME, P_MAX_POWER_RETRY, P_MAX_PARAM8};   // Index in sysCf
 #ifdef USE_SPI
   #include <SPI.h>                          // SPI support, TFT
 #endif  // USE_SPI
+#ifdef USE_IOTMANAGER
+  #include "xdrv_iotmanager.h"
+#endif
 #include "settings.h"
 
 #define MAX_BUTTON_COMMANDS    5            // Max number of button commands supported
@@ -563,6 +573,9 @@ void mqtt_connected()
 #ifdef USE_DOMOTICZ
     domoticz_mqttSubscribe();
 #endif  // USE_DOMOTICZ
+#ifdef USE_IOTMANAGER
+    iotmanager_mqttSubscribe();
+#endif  // USE_IOTMANAGER
   }
 
   if (mqttflag) {
@@ -894,6 +907,7 @@ void mqttDataCb(char* topic, byte* data, unsigned int data_len)
   addLog(LOG_LEVEL_DEBUG_MORE, svalue);
 //  if (LOG_LEVEL_DEBUG_MORE <= seriallog_level) Serial.println(dataBuf);
 
+#ifndef USE_IOTMANAGER
 #ifdef USE_DOMOTICZ
   if (sysCfg.flag.mqtt_enabled) {
     if (domoticz_mqttData(topicBuf, sizeof(topicBuf), dataBuf, sizeof(dataBuf))) {
@@ -901,7 +915,20 @@ void mqttDataCb(char* topic, byte* data, unsigned int data_len)
     }
   }
 #endif  // USE_DOMOTICZ
+#endif
 
+#ifdef USE_IOTMANAGER
+  if (sysCfg.flag.mqtt_enabled) {
+
+    if (iotmanager_mqttData(topicBuf, sizeof(topicBuf), dataBuf, sizeof(dataBuf))) {
+      #ifdef USE_DOMOTICZ
+        if (domoticz_mqttData(topicBuf, sizeof(topicBuf), dataBuf, sizeof(dataBuf))) return;
+      #else
+        return;
+      #endif
+    }
+  }
+#endif
   grpflg = (strstr(topicBuf, sysCfg.mqtt_grptopic) != NULL);
   fallbacktopic = (strstr(topicBuf, MQTTClient) != NULL);
   type = strrchr(topicBuf, '/') +1;  // Last part of received topic is always the command (type)
@@ -1663,6 +1690,9 @@ void do_cmnd_power(byte device, byte state)
 #ifdef USE_DOMOTICZ
     domoticz_updatePowerState(device);
 #endif  // USE_DOMOTICZ
+#ifdef USE_IOTMANAGER
+    iotmanager_updatePowerState(device);
+#endif  // USE_IOTMANAGER
     pulse_timer[(device -1)&3] = (power & mask) ? sysCfg.pulsetime[(device -1)&3] : 0;
   }
   else if (3 == state) { // Blink

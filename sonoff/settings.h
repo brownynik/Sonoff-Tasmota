@@ -206,6 +206,12 @@ struct SYSCFG {
   // 5.4.1
   uint8_t       sfb_code[17][9];
 
+ // MQTT Manager
+  #ifdef USE_IOTMANAGER
+  char          iotmanager_prefix[33];
+  iotmRelayWidget iotmRelayWidgets[IOTM_RELAYCOUNT];
+  iotmSensorWidget iotmSensorWidgets[IOTM_SENSORCOUNT];
+  #endif
 } sysCfg;
 
 struct RTCMEM {

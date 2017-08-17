@@ -149,6 +149,9 @@ const char HTTP_BTN_MENU3[] PROGMEM =
 #ifdef USE_DOMOTICZ
   "<br/><form action='dm' method='get'><button>Configure Domoticz</button></form>"
 #endif  // USE_DOMOTICZ
+#ifdef USE_IOTMANAGER
+  "<br/><form action='iotm' method='get'><button>Configure IoTmanager</button></form>"
+#endif  // USE_IOTMANAGER
   "";
 const char HTTP_BTN_MENU4[] PROGMEM =
   "<br/><form action='lg' method='get'><button>Configure Logging</button></form>"
@@ -297,6 +300,9 @@ void startWebserver(int type, IPAddress ipweb)
 #ifdef USE_DOMOTICZ
         webServer->on("/dm", handleDomoticz);
 #endif  // USE_DOMOTICZ
+#ifdef USE_IOTMANAGER
+        webServer->on("/iotm", handleIoTmanager);
+#endif  // USE_IOTMANAGER
       }
       webServer->on("/lg", handleLog);
       webServer->on("/co", handleOther);
@@ -992,6 +998,11 @@ void handleSave()
     domoticz_saveSettings();
     break;
 #endif  // USE_DOMOTICZ
+#ifdef USE_IOTMANAGER
+  case 7:
+    iotmanager_saveSettings();
+    break;  
+#endif  // USE_IOTMANAGER
   case 5:
     strlcpy(sysCfg.web_password, (!strlen(webServer->arg("p1").c_str())) ? WEB_PASSWORD : (!strcmp(webServer->arg("p1").c_str(),"0")) ? "" : webServer->arg("p1").c_str(), sizeof(sysCfg.web_password));
     sysCfg.flag.mqtt_enabled = webServer->hasArg("b1");
