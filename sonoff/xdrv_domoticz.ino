@@ -71,6 +71,32 @@ void mqtt_publishDomoticzPowerState(byte device)
   }
 }
 
+#ifdef USE_IOTMANAGER
+void mqtt_publishDomoticzPowerState(byte device, byte state)
+{
+  char svalue[64];  // was MESSZ
+
+  if (sysCfg.flag.mqtt_enabled && sysCfg.domoticz_relay_idx[device -1]) {
+    if ((device < 1) || (device > Maxdevice)) {
+      device = 1;
+    }
+    if (sfl_flg) {
+      snprintf_P(svalue, sizeof(svalue), PSTR("{\"idx\":%d,\"nvalue\":2,\"svalue\":\"%d\"}"),
+        sysCfg.domoticz_relay_idx[device -1], sysCfg.led_dimmer[device -1]);
+      mqtt_publish(domoticz_in_topic, svalue);
+    }
+    else if ((Maxdevice == device) && (pin[GPIO_WS2812] < 99)) {
+      snprintf_P(svalue, sizeof(svalue), PSTR("{\"idx\":%d,\"nvalue\":2,\"svalue\":\"%d\"}"),
+        sysCfg.domoticz_relay_idx[device -1], sysCfg.ws_dimmer);
+      mqtt_publish(domoticz_in_topic, svalue);
+    }
+    snprintf_P(svalue, sizeof(svalue), PSTR("{\"idx\":%d,\"nvalue\":%d,\"svalue\":\"\"}"),
+      sysCfg.domoticz_relay_idx[device -1], /*(power & (0x01 << (device -1))) ? 1 : 0*/ state);
+    mqtt_publish(domoticz_in_topic, svalue);
+  }
+}
+#endif
+
 void domoticz_updatePowerState(byte device)
 {
   if (domoticz_update_flag) {

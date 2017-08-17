@@ -38,3 +38,31 @@
 //#endif
 //#define STA_SSID1              "yourssid1"
 
+// -- Wifi -----------------------------------
+#define STA_SSID1              "Browny WLAN"      // [Ssid1] Wifi SSID
+#define STA_PASS1              "yourpasword"  // [Password1] Wifi password
+
+// -- Wifi ----------------------------------------
+// #define WIFI_IP_ADDRESS        "0.0.0.0"         // [IpAddress1] Set to 0.0.0.0 for using DHCP or IP address
+#define WIFI_IP_ADDRESS        "192.168.1.151"         // [IpAddress1] Set to 0.0.0.0 for using DHCP or IP address
+#define WIFI_GATEWAY           "192.168.1.51"   // {IpAddress2] If not using DHCP set Gateway IP address
+#define WIFI_SUBNETMASK        "255.255.255.0"   // [IpAddress3] If not using DHCP set Network mask
+#define WIFI_DNS               "192.168.1.51"    // [IpAddress4] If not using DHCP set DNS IP address (might be equal to WIFI_GATEWAY)
+
+// -- MQTT ----------------------------------------
+#define MQTT_HOST            "mosquitto"     // [MqttHost]
+#define MQTT_PORT            1883         // [MqttPort] MQTT port (10123 on CloudMQTT)
+#define MQTT_USER            "esp8266"  // [MqttUser] Optional user
+#define MQTT_PASS            "yourpassword"  // [MqttPassword] Optional password
+
+//#define DOMOTICZ_UPDATE_TIMER  0               // [DomoticzUpdateTimer] Send relay status (0 = disable, 1 - 3600 seconds) (Optional)
+//#define TELE_PERIOD            300               // [TelePeriod] Telemetry (0 = disable, 10 - 3600 seconds)
+#define DOMOTICZ_UPDATE_TIMER  1               // [DomoticzUpdateTimer] Send relay status (0 = disable, 1 - 3600 seconds) (Optional)
+#define TELE_PERIOD            0               // [TelePeriod] Telemetry (0 = disable, 10 - 3600 seconds)
+
+// -- IoT Manager (http://iotmanager.ru/exchange/)
+#define USE_IOTMANAGER
+
+//#ifdef USE_DOMOTICZ 
+//  #undef USE_DOMOTICZ
+//#endif

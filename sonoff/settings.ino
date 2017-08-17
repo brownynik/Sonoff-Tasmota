@@ -486,6 +486,9 @@ void CFG_DefaultSet2()
   // 5.0.2
   CFG_DefaultSet_5_0_2();
 
+  #ifdef USE_IOTMANAGER
+  CFG_DefaultSet_IOTMANAGER();
+  #endif
   // 5.0.4
 //  sysCfg.hlw_kWhtotal = 0;
   rtcMem.hlw_kWhtotal = 0;
@@ -599,6 +602,40 @@ void CFG_DefaultSet_5_0_2()
   sysCfg.flag.energy_resolution = ENERGY_RESOLUTION;
 }
 
+#ifdef USE_IOTMANAGER
+void CFG_DefaultSet_IOTMANAGER()
+{
+  strlcpy(sysCfg.iotmanager_prefix, IOTM_PREFIX, sizeof(sysCfg.iotmanager_prefix));
+  // strlcat(sysCfg.iotmanager_prefix, "/", sizeof(sysCfg.iotmanager_prefix));
+  
+#if (MODULE == SONOFF)||(MODULE == SONOFF_2)
+  for(int i=0;i<IOTM_RELAYCOUNT;i++) {
+    sysCfg.iotmRelayWidgets[i].widgetId = i+1;
+    sysCfg.iotmRelayWidgets[i].pageId = IOTM_PAGEID;
+    strlcpy(sysCfg.iotmRelayWidgets[i].pageName, IOTM_PAGENAME, sizeof(sysCfg.iotmRelayWidgets[i].pageName));
+    snprintf_P(sysCfg.iotmRelayWidgets[i].jsonBody, sizeof(sysCfg.iotmRelayWidgets[i].jsonBody), PSTR(IOTM_RELAYWIDGET), 'A'+i);
+  };
+
+
+  // установка в виджете дефолтных значений (значения по-умолчанию)
+  for(int i=0;i<IOTM_SENSORCOUNT;i++) {
+    iotmSensorDataBuff[i].isUpdated = sufNotUpdated;
+    iotmSensorDataBuff[i].cachedValue = 0;
+    sysCfg.iotmSensorWidgets[i].pubInterval = IOTM_SENSORPUBINTERVAL_DEF; // Sensor publication interval in sec. // интервал публикации значения виджета
+    iotmSensorDataBuff[i].pubCurrentTime = sysCfg.iotmSensorWidgets[i].pubInterval;
+    sysCfg.iotmSensorWidgets[i].widgetId = IOTM_RELAYCOUNT + i + 1; // relay widget A [ID=1], relay widget B [ID = 2]... sensor widget A [ID = Last relay widget ID + 1]
+    sysCfg.iotmSensorWidgets[i].pageId = IOTM_PAGEID;
+    strlcpy(sysCfg.iotmSensorWidgets[i].pageName, IOTM_PAGENAME, sizeof(sysCfg.iotmSensorWidgets[i].pageName));
+    sysCfg.iotmSensorWidgets[i].sensorType = getSensorTypeByModel(i);
+    getSensorSuffixByType(sysCfg.iotmSensorWidgets[i].unitSuffix, sysCfg.iotmSensorWidgets[i].sensorType);
+    
+     snprintf_P(sysCfg.iotmSensorWidgets[i].jsonBody, sizeof(sysCfg.iotmSensorWidgets[i].jsonBody), PSTR(IOTM_SENSORWIDGET), /*String(iotmSensorDataBuff[i].cachedValue).c_str(), sysCfg.iotmSensorWidgets[i].unitSuffix,*/ 'A'+i);
+    //snprintf_P(sysCfg.iotmSensorWidgets[i].jsonBody, sizeof(sysCfg.iotmSensorWidgets[i].jsonBody), PSTR(IOTM_SENSORWIDGET), "0", sysCfg.iotmSensorWidgets[i].unitSuffix, 'A'+i);
+  };
+#endif
+}
+
+#endif
 /********************************************************************************************/
 
 void CFG_Delta()
