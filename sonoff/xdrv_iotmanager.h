@@ -38,9 +38,38 @@
 #define IOTM_SENSORPUBINTERVAL_DEF  10    // интервал отправки сообщения от датчика - по умолчанию
 
 
-//#if MODULE == SONOFF
-#define  IOTM_RELAYCOUNT       1
-#define  IOTM_SENSORCOUNT      0 // развести потом это значение по моделям
+#if MODULE == SONOFF_BASIC 
+#define  IOTM_RELAYCOUNT      1
+#define  IOTM_SENSORCOUNT     0 // развести потом это значение по моделям
+#endif
+
+#if MODULE == SONOFF_DUAL 
+#define  IOTM_RELAYCOUNT      2
+#define  IOTM_SENSORCOUNT     0
+#endif
+
+#if MODULE == SONOFF_4CH 
+#define  IOTM_RELAYCOUNT      4
+#define  IOTM_SENSORCOUNT     0
+#endif
+
+#if MODULE == SONOFF_DEV
+#define  IOTM_RELAYCOUNT      0
+#define  IOTM_SENSORCOUNT     4
+#endif
+
+
+
+
+
+#ifndef IOTM_RELAYCOUNT
+#define IOTM_RELAYCOUNT       0
+#endif
+
+#ifndef IOTM_SENSORCOUNT
+#define IOTM_SENSORCOUNT      0
+#endif
+
 //#else
 //  #define  IOTM_RELAYCOUNT       0
 //  #define  IOTM_SENSORCOUNT      0 // развести потом это значение по моделям

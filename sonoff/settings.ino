@@ -174,7 +174,7 @@ uint32_t getHash()
   return hash;
 }
 
-/*********************************************************************************************\
+ /*********************************************************************************************\
  * Config Save - Save parameters to Flash ONLY if any parameter has changed
 \*********************************************************************************************/
 
@@ -201,25 +201,39 @@ void CFG_Save(byte rotate)
       stop_flash_rotate = 1;
     }
     if (2 == rotate) {   // Use eeprom flash slot and erase next flash slots if stop_flash_rotate is off (default)
-      _cfgLocation = CFG_LOCATION +1;
+      //_cfgLocation = CFG_LOCATION + 1;
+      // browny 
+      _cfgLocation = CFG_LOCATION + 2; // —à–∞–≥–∞–µ–º –Ω–∞ –¥–≤–∞ —Å–µ–∫—Ç–æ—Ä–∞
     }
     if (stop_flash_rotate) {
       _cfgLocation = CFG_LOCATION;
     } else {
-      _cfgLocation--;
-      if (_cfgLocation <= (CFG_LOCATION - CFG_ROTATES)) {
+      // _cfgLocation--;
+      // browny
+      _cfgLocation = _cfgLocation - 2;
+      //if (_cfgLocation <= (CFG_LOCATION - CFG_ROTATES)) {
+      // browny
+      if (_cfgLocation <= (CFG_LOCATION - CFG_ROTATES*2)) {
         _cfgLocation = CFG_LOCATION;
       }
     }
     sysCfg.saveFlag++;
     noInterrupts();
+    //spi_flash_erase_sector(_cfgLocation);
+    //spi_flash_write(_cfgLocation * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
+    // browny
     spi_flash_erase_sector(_cfgLocation);
+    spi_flash_erase_sector(_cfgLocation + 1);
     spi_flash_write(_cfgLocation * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
+    
     interrupts();
     if (!stop_flash_rotate && rotate) {
       for (byte i = 1; i < CFG_ROTATES; i++) {
         noInterrupts();
-        spi_flash_erase_sector(_cfgLocation -i);  // Delete previous configurations by resetting to 0xFF
+        // spi_flash_erase_sector(_cfgLocation -i);  // Delete previous configurations by resetting to 0xFF
+        // browny
+        spi_flash_erase_sector(_cfgLocation -i*2);  // Delete previous configurations by resetting to 0xFF
+        spi_flash_erase_sector(_cfgLocation -i*2+1);  // Delete previous configurations by resetting to 0xFF
         interrupts();
         delay(1);
       }
@@ -243,12 +257,20 @@ void CFG_Load()
     unsigned long saveFlag;
   } _sysCfgH;
 
-  _cfgLocation = CFG_LOCATION +1;
+  // _cfgLocation = CFG_LOCATION +1;
+  // browny
+  _cfgLocation = CFG_LOCATION + 2;
   for (byte i = 0; i < CFG_ROTATES; i++) {
-    _cfgLocation--;
+    // _cfgLocation--;
+    // browny
+    _cfgLocation = _cfgLocation - 2;
     noInterrupts();
+    //spi_flash_read(_cfgLocation * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
+    //spi_flash_read((_cfgLocation -1) * SPI_FLASH_SEC_SIZE, (uint32*)&_sysCfgH, sizeof(SYSCFGH));
+    // browny
     spi_flash_read(_cfgLocation * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
-    spi_flash_read((_cfgLocation -1) * SPI_FLASH_SEC_SIZE, (uint32*)&_sysCfgH, sizeof(SYSCFGH));
+    spi_flash_read((_cfgLocation -2) * SPI_FLASH_SEC_SIZE, (uint32*)&_sysCfgH, sizeof(SYSCFGH));
+    
     interrupts();
 
 //  snprintf_P(log, sizeof(log), PSTR("Cnfg: Check at %X with count %d and holder %X"), _cfgLocation -1, _sysCfgH.saveFlag, _sysCfgH.cfg_holder);
@@ -264,10 +286,16 @@ void CFG_Load()
   if (sysCfg.cfg_holder != CFG_HOLDER) {
     // Auto upgrade
     noInterrupts();
+    //spi_flash_read((CFG_LOCATION_3) * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
+    //spi_flash_read((CFG_LOCATION_3 + 1) * SPI_FLASH_SEC_SIZE, (uint32*)&_sysCfgH, sizeof(SYSCFGH));
+    //if (sysCfg.saveFlag < _sysCfgH.saveFlag)
+    //  spi_flash_read((CFG_LOCATION_3 + 1) * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
+    // browny
     spi_flash_read((CFG_LOCATION_3) * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
-    spi_flash_read((CFG_LOCATION_3 + 1) * SPI_FLASH_SEC_SIZE, (uint32*)&_sysCfgH, sizeof(SYSCFGH));
+    spi_flash_read((CFG_LOCATION_3 + 2) * SPI_FLASH_SEC_SIZE, (uint32*)&_sysCfgH, sizeof(SYSCFGH));
     if (sysCfg.saveFlag < _sysCfgH.saveFlag)
-      spi_flash_read((CFG_LOCATION_3 + 1) * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
+      spi_flash_read((CFG_LOCATION_3 + 2) * SPI_FLASH_SEC_SIZE, (uint32*)&sysCfg, sizeof(SYSCFG));
+    
     interrupts();
     if ((sysCfg.cfg_holder != CFG_HOLDER) || (sysCfg.version >= 0x04020000)) {
       CFG_Default();
@@ -608,7 +636,9 @@ void CFG_DefaultSet_IOTMANAGER()
   strlcpy(sysCfg.iotmanager_prefix, IOTM_PREFIX, sizeof(sysCfg.iotmanager_prefix));
   // strlcat(sysCfg.iotmanager_prefix, "/", sizeof(sysCfg.iotmanager_prefix));
   
-#if (MODULE == SONOFF)||(MODULE == SONOFF_2)
+//#if (MODULE == SONOFF)||(MODULE == SONOFF_2)
+#if IOTM_RELAYCOUNT > 0
+
   for(int i=0;i<IOTM_RELAYCOUNT;i++) {
     sysCfg.iotmRelayWidgets[i].widgetId = i+1;
     sysCfg.iotmRelayWidgets[i].pageId = IOTM_PAGEID;
@@ -617,11 +647,11 @@ void CFG_DefaultSet_IOTMANAGER()
   };
 
 
-  // ÛÒÚ‡ÌÓ‚Í‡ ‚ ‚Ë‰ÊÂÚÂ ‰ÂÙÓÎÚÌ˚ı ÁÌ‡˜ÂÌËÈ (ÁÌ‡˜ÂÌËˇ ÔÓ-ÛÏÓÎ˜‡ÌË˛)
+  // —É—Å—Ç–∞–Ω–æ–≤–∫–∞ –≤ –≤–∏–¥–∂–µ—Ç–µ –¥–µ—Ñ–æ–ª—Ç–Ω—ã—Ö –∑–Ω–∞—á–µ–Ω–∏–π (–∑–Ω–∞—á–µ–Ω–∏—è –ø–æ-—É–º–æ–ª—á–∞–Ω–∏—é)
   for(int i=0;i<IOTM_SENSORCOUNT;i++) {
     iotmSensorDataBuff[i].isUpdated = sufNotUpdated;
     iotmSensorDataBuff[i].cachedValue = 0;
-    sysCfg.iotmSensorWidgets[i].pubInterval = IOTM_SENSORPUBINTERVAL_DEF; // Sensor publication interval in sec. // ËÌÚÂ‚‡Î ÔÛ·ÎËÍ‡ˆËË ÁÌ‡˜ÂÌËˇ ‚Ë‰ÊÂÚ‡
+    sysCfg.iotmSensorWidgets[i].pubInterval = IOTM_SENSORPUBINTERVAL_DEF; // Sensor publication interval in sec. // –∏–Ω—Ç–µ—Ä–≤–∞–ª –ø—É–±–ª–∏–∫–∞—Ü–∏–∏ –∑–Ω–∞—á–µ–Ω–∏—è –≤–∏–¥–∂–µ—Ç–∞
     iotmSensorDataBuff[i].pubCurrentTime = sysCfg.iotmSensorWidgets[i].pubInterval;
     sysCfg.iotmSensorWidgets[i].widgetId = IOTM_RELAYCOUNT + i + 1; // relay widget A [ID=1], relay widget B [ID = 2]... sensor widget A [ID = Last relay widget ID + 1]
     sysCfg.iotmSensorWidgets[i].pageId = IOTM_PAGEID;

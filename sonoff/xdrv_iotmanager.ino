@@ -10,7 +10,8 @@ void mqtt_publishIoTmanagerPowerState(byte device, byte state)
   char stopic[TOPSZ], svalue[MESSZ], sdevice[20];
 
   // if ((device < 1) || (device > Maxdevice)) device = 1;
-  #if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+  // #if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+  #if IOTM_RELAYCOUNT > 0
 
   snprintf_P(sdevice, sizeof(sdevice), PSTR("%s%d"), IOTM_RELAYNAME, device);
   snprintf_P(svalue, sizeof(svalue), PSTR("{\"status\":%d}"), /*(power & (0x01 << (device -1)))?1:0*/ state);
@@ -144,7 +145,8 @@ boolean iotmanager_mqttData(char *topicBuf, uint16_t stopicBuf, char *dataBuf, u
           //addLog(LOG_LEVEL_DEBUG_MORE, log);
           
           
-          #if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+          // #if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+          #if IOTM_RELAYCOUNT > 0
           for(int i = 0; i < IOTM_RELAYCOUNT; i++)
             if ((!index)||(sysCfg.iotmRelayWidgets[i].pageId == index)) {
   
@@ -254,7 +256,8 @@ const char HTTP_FORM_IOTMANAGER[] PROGMEM =
   "<fieldset><legend><b>&nbsp;IoTmanager parameters&nbsp;</b></legend><form method='post' action='sv'>"
   "<input id='w' name='w' value='7' hidden><input id='r' name='r' value='1' hidden>"
   "<br/><b>IoTmanager root topic</b> (" IOTM_PREFIX ")<br/><input id='iotm' name='iotm' maxlength=32 placeholder='" IOTM_PREFIX "' value='{im1}'><br/>";
-#if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+//#if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+#if IOTM_RELAYCOUNT > 0
 const char HTTP_IOTM_RELAYWIDGET[] PROGMEM =
   "<br/><b>Relay widget {WLETTER}</b><br/><textarea style='height:100px;' id='iotmw{WNUMBER}' name='iotmw{WNUMBER}' maxlength=" STR(MESSZ) " placeholder='{json widget style there}'>{RELAYWIDGETBODY}</textarea><br/>"
   "<br/><b>Widget page name</b> (" IOTM_PAGENAME ")<br/><input id='iotmpn{WNUMBER}' name='iotmpn{WNUMBER}' maxlength=20 placeholder='" IOTM_PAGENAME "' value='{WIDGETPAGENAME}'><br/>"
@@ -277,7 +280,7 @@ const char HTTP_IOTM_SENSORWIDGET[] PROGMEM =
   "<select id=\"iotmtid{WNUMBER}\" name=\"iotmtid{WNUMBER}\" OnChange=\"setSensorSuffix('iotmtid{WNUMBER}','iotmsuffix{WNUMBER}')\">{IOTM_SENSORTYPESELECTOR}</select><br/>"
   "<br/><b>Sensor Suffix</b><br/><input id='iotmsuffix{WNUMBER}' name='iotmsuffix{WNUMBER}' maxlength=" STR(IOTM_SNSUFFIXZ) " placeholder='{WIDGETSENSORTYPEDESCRIPT}' value='{WIDGETSENSORTYPEDESCRIPT}'><br/>"
   "<br/><b>Publication interval (sec)</b>&nbsp;(numeric, between 1 and " STR(IOTM_SENSORPUBINTERVAL_MAX) ")<br/><input name='iotmpub{WNUMBER}'  type='number' min='1' max='" STR(IOTM_SENSORPUBINTERVAL_MAX) "' value='{SENSORPUBINTERVAL}' required><br/><hr>";
-#endif // MODULE == SONOFF
+#endif // IOTM_RELAYCOUNT > 0 -- MODULE == SONOFF
 
 void handleIoTmanager()
 {
@@ -303,7 +306,8 @@ void handleIoTmanager()
   page += FPSTR(HTTP_FORM_IOTMANAGER);
   page.replace("{im1}", String(sysCfg.iotmanager_prefix));
 
-#if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+// #if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+#if IOTM_RELAYCOUNT > 0
 
   for(int i=0;i<IOTM_RELAYCOUNT;i++) {
     page += FPSTR(HTTP_IOTM_RELAYWIDGET);
@@ -366,7 +370,8 @@ void iotmanager_saveSettings()
     char log[LOGSZ]; //, stemp[20];
 
     strlcpy(sysCfg.iotmanager_prefix, (!strlen(webServer->arg("iotm").c_str())) ? IOTM_PREFIX : webServer->arg("iotm").c_str(), sizeof(sysCfg.iotmanager_prefix));
-#if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+// #if (MODULE == SONOFF_BASIC)||(MODULE == SONOFF_2)
+#if IOTM_RELAYCOUNT > 0
     for(int i=0;i<IOTM_RELAYCOUNT;i++) {
 
       // Widget body (JSON-based configuration)

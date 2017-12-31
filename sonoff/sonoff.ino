@@ -28,7 +28,7 @@
 #ifndef USE_IOTMANAGER
 #define VERSION                0x05050200  // 5.5.2
 #else
-#define VERSION                0x05050300  // 5.5.3
+#define VERSION                0x05050400  // 5.5.3
 #endif
 enum log_t   {LOG_LEVEL_NONE, LOG_LEVEL_ERROR, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG, LOG_LEVEL_DEBUG_MORE, LOG_LEVEL_ALL};
 enum week_t  {Last, First, Second, Third, Fourth};
@@ -48,7 +48,9 @@ enum emul_t  {EMUL_NONE, EMUL_WEMO, EMUL_HUE, EMUL_MAX};
  * No user configurable items below
 \*********************************************************************************************/
 
-#define MODULE                 SONOFF_BASIC // [Module] Select default model
+// #define MODULE                 SONOFF_BASIC // [Module] Select default model
+//#define MODULE                 SONOFF_DUAL // [Module] Select default model
+#define MODULE                    SONOFF_4CH // [Module] Select default model
 
 #define USE_DHT                             // Default DHT11 sensor needs no external library
 #ifndef USE_DS18x20

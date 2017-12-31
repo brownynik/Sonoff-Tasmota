@@ -44,7 +44,7 @@
 
 // -- Wifi ----------------------------------------
 // #define WIFI_IP_ADDRESS        "0.0.0.0"         // [IpAddress1] Set to 0.0.0.0 for using DHCP or IP address
-#define WIFI_IP_ADDRESS        "192.168.1.151"         // [IpAddress1] Set to 0.0.0.0 for using DHCP or IP address
+  #define WIFI_IP_ADDRESS        "192.168.1.166"         // [IpAddress1] Set to 0.0.0.0 for using DHCP or IP address
 #define WIFI_GATEWAY           "192.168.1.51"   // {IpAddress2] If not using DHCP set Gateway IP address
 #define WIFI_SUBNETMASK        "255.255.255.0"   // [IpAddress3] If not using DHCP set Network mask
 #define WIFI_DNS               "192.168.1.51"    // [IpAddress4] If not using DHCP set DNS IP address (might be equal to WIFI_GATEWAY)
@@ -66,3 +66,5 @@
 //#ifdef USE_DOMOTICZ 
 //  #undef USE_DOMOTICZ
 //#endif
+
+#define APP_TIMEZONE           3              // UTC+3, Russia, Moscow
